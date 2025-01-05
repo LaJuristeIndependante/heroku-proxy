@@ -29,9 +29,12 @@ app.get('/api/products/:id/pdf', async (req, res) => {
             return res.status(404).json({ message: `PDF introuvable pour l'id ${id}` });
         }
 
+        // Échapper le nom du fichier pour éviter les caractères invalides
+        const safeFileName = encodeURIComponent(product.name);
+
         // Envoyer le fichier PDF
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${product.name}.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}.pdf"`);
         res.send(product.pdfFile);
     } catch (err) {
         console.error(`Erreur lors de la récupération du PDF pour l'id ${req.params.id}:`, err);
