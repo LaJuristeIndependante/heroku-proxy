@@ -1,41 +1,42 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const path = require('path');
-const fs = require('fs');
+const mongoose = require('mongoose');
+const Product = require('./models/Product'); // Votre modèle mongoose
+require('dotenv').config();
 
 const app = express();
 
-// Middleware pour parser le JSON
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+// Connexion à MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+    .then(() => console.log('Connecté à MongoDB'))
+    .catch(err => console.error('Erreur de connexion à MongoDB:', err));
 
-// Gestion des fichiers PDF pour `/api/products/:id/pdf`
-app.get('/api/products/:id/pdf', (req, res) => {
-    const { id } = req.params;
+// Route pour télécharger un fichier PDF
+app.get('/api/products/:id/pdf', async (req, res) => {
+    try {
+        const { id } = req.params;
 
-    // Chemin vers le fichier PDF basé sur l'id
-    const pdfPath = path.join(__dirname, 'files', `${id}.pdf`);
+        // Trouver le produit dans la base MongoDB
+        const product = await Product.findById(id);
 
-    // Vérifier si le fichier existe
-    if (!fs.existsSync(pdfPath)) {
-        console.error(`PDF introuvable pour l'id ${id}`);
-        return res.status(404).json({ message: `PDF introuvable pour l'id ${id}` });
-    }
-
-    // Envoyer le fichier PDF avec les bons en-têtes
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${id}.pdf"`);
-    res.sendFile(pdfPath, (err) => {
-        if (err) {
-            console.error(`Erreur lors de l'envoi du PDF pour l'id ${id} :`, err);
-            res.status(500).json({ message: 'Erreur lors de l\'envoi du fichier PDF' });
+        if (!product) {
+            return res.status(404).json({ message: `Produit introuvable pour l'id ${id}` });
         }
-    });
-});
 
-// Route de test
-app.get('/', (req, res) => {
-    res.send('Le proxy fonctionne correctement.');
+        if (!product.pdfFile) {
+            return res.status(404).json({ message: `PDF introuvable pour l'id ${id}` });
+        }
+
+        // Envoyer le fichier PDF
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${product.name}.pdf"`);
+        res.send(product.pdfFile);
+    } catch (err) {
+        console.error(`Erreur lors de la récupération du PDF pour l'id ${req.params.id}:`, err);
+        res.status(500).json({ message: 'Erreur interne lors de la récupération du PDF' });
+    }
 });
 
 // Port par défaut ou défini par Heroku
