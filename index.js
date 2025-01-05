@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
@@ -17,6 +19,30 @@ app.all('/api/products', (req, res) => {
 app.all('/api/products/*', (req, res) => {
     console.log(`Requête sous-route reçue : ${req.method} ${req.url}`);
     res.json({ message: `Requête traitée pour la sous-route ${req.url}` });
+});
+
+// Gestion des fichiers PDF pour `/api/products/:id/pdf`
+app.get('/api/products/:id/pdf', (req, res) => {
+    const { id } = req.params;
+
+    // Chemin vers le fichier PDF basé sur l'id
+    const pdfPath = path.join(__dirname, 'files', `${id}.pdf`);
+
+    // Vérifier si le fichier existe
+    if (!fs.existsSync(pdfPath)) {
+        console.error(`PDF introuvable pour l'id ${id}`);
+        return res.status(404).json({ message: `PDF introuvable pour l'id ${id}` });
+    }
+
+    // Envoyer le fichier PDF avec les bons en-têtes
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${id}.pdf"`);
+    res.sendFile(pdfPath, (err) => {
+        if (err) {
+            console.error(`Erreur lors de l'envoi du PDF pour l'id ${id} :`, err);
+            res.status(500).json({ message: 'Erreur lors de l\'envoi du fichier PDF' });
+        }
+    });
 });
 
 // Port par défaut ou celui défini par Heroku
