@@ -9,18 +9,6 @@ const app = express();
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
-// Gestion de la route racine `/api/products`
-app.all('/api/products', (req, res) => {
-    console.log(`Requête racine reçue : ${req.method} ${req.url}`);
-    res.json({ message: 'Requête traitée pour la route racine /api/products' });
-});
-
-// Gestion des sous-routes `/api/products/:path*`
-app.all('/api/products/*', (req, res) => {
-    console.log(`Requête sous-route reçue : ${req.method} ${req.url}`);
-    res.json({ message: `Requête traitée pour la sous-route ${req.url}` });
-});
-
 // Gestion des fichiers PDF pour `/api/products/:id/pdf`
 app.get('/api/products/:id/pdf', (req, res) => {
     const { id } = req.params;
@@ -45,7 +33,12 @@ app.get('/api/products/:id/pdf', (req, res) => {
     });
 });
 
-// Port par défaut ou celui défini par Heroku
+// Route de test
+app.get('/', (req, res) => {
+    res.send('Le proxy fonctionne correctement.');
+});
+
+// Port par défaut ou défini par Heroku
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Serveur en écoute sur le port ${PORT}`);
