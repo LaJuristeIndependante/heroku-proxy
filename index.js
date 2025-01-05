@@ -7,10 +7,16 @@ const app = express();
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
-// Route pour capturer toutes les sous-routes de /api/products
+// Gestion de la route racine `/api/products`
+app.all('/api/products', (req, res) => {
+    console.log(`Requête racine reçue : ${req.method} ${req.url}`);
+    res.json({ message: 'Requête traitée pour la route racine /api/products' });
+});
+
+// Gestion des sous-routes `/api/products/:path*`
 app.all('/api/products/*', (req, res) => {
-    console.log(`Requête reçue : ${req.method} ${req.url}`);
-    res.json({ message: `Requête traitée avec succès pour ${req.url}` });
+    console.log(`Requête sous-route reçue : ${req.method} ${req.url}`);
+    res.json({ message: `Requête traitée pour la sous-route ${req.url}` });
 });
 
 // Port par défaut ou celui défini par Heroku
