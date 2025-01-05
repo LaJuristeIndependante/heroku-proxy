@@ -7,10 +7,10 @@ const app = express();
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
-// Route API pour tester
-app.post('/api/products', (req, res) => {
-    console.log('Requête reçue :', req.body);
-    res.json({ message: 'Requête traitée avec succès par le proxy !' });
+// Route pour capturer toutes les sous-routes de /api/products
+app.all('/api/products/*', (req, res) => {
+    console.log(`Requête reçue : ${req.method} ${req.url}`);
+    res.json({ message: `Requête traitée avec succès pour ${req.url}` });
 });
 
 // Port par défaut ou celui défini par Heroku
