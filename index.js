@@ -13,6 +13,30 @@ mongoose.connect(process.env.MONGO_URI, {
     .then(() => console.log('Connecté à MongoDB'))
     .catch(err => console.error('Erreur de connexion à MongoDB:', err));
 
+app.get('/api/products/:id?', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (id) {
+            // Trouver un produit spécifique par ID
+            const product = await Product.findById(id);
+
+            if (!product) {
+                return res.status(404).json({ message: `Produit introuvable pour l'id ${id}` });
+            }
+
+            res.status(200).json(product);
+        } else {
+            // Retourner tous les produits si aucun ID n'est fourni
+            const products = await Product.find();
+            res.status(200).json(products);
+        }
+    } catch (err) {
+        console.error('Erreur lors de la récupération des produits:', err);
+        res.status(500).json({ message: 'Erreur interne lors de la récupération des produits' });
+    }
+});
+
 // Route pour télécharger un fichier PDF
 app.get('/api/products/:id/pdf', async (req, res) => {
     try {
