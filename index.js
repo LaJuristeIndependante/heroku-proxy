@@ -66,6 +66,65 @@ app.get('/api/products/:id/pdf', async (req, res) => {
     }
 });
 
+// Route POST pour ajouter un produit
+app.post('/api/product', async (req, res) => {
+    try {
+        const { name, description, price, profession, pdfFile } = req.body;
+
+        // Validation des données
+        if (!name || !description || !price || !profession) {
+            return res.status(400).json({ message: 'Tous les champs requis doivent être remplis.' });
+        }
+
+        const newProduct = new Product({ name, description, price, profession, pdfFile });
+        const savedProduct = await newProduct.save();
+
+        res.status(201).json(savedProduct);
+    } catch (err) {
+        console.error('Erreur lors de la création du produit:', err);
+        res.status(500).json({ message: 'Erreur interne lors de la création du produit' });
+    }
+});
+
+// Route PUT pour modifier un produit par ID
+app.put('/api/products/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+
+        // Trouver et mettre à jour le produit
+        const updatedProduct = await Product.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+
+        if (!updatedProduct) {
+            return res.status(404).json({ message: `Produit introuvable pour l'id ${id}` });
+        }
+
+        res.status(200).json(updatedProduct);
+    } catch (err) {
+        console.error('Erreur lors de la mise à jour du produit:', err);
+        res.status(500).json({ message: 'Erreur interne lors de la mise à jour du produit' });
+    }
+});
+
+// Route DELETE pour supprimer un produit par ID
+app.delete('/api/products/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Trouver et supprimer le produit
+        const deletedProduct = await Product.findByIdAndDelete(id);
+
+        if (!deletedProduct) {
+            return res.status(404).json({ message: `Produit introuvable pour l'id ${id}` });
+        }
+
+        res.status(200).json({ message: 'Produit supprimé avec succès', deletedProduct });
+    } catch (err) {
+        console.error('Erreur lors de la suppression du produit:', err);
+        res.status(500).json({ message: 'Erreur interne lors de la suppression du produit' });
+    }
+});
+
 // Port par défaut ou défini par Heroku
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
