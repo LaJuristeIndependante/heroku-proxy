@@ -87,7 +87,7 @@ app.post('/api/product', async (req, res) => {
 });
 
 // Route PUT pour modifier un produit par ID
-app.put('/api/products/:id', async (req, res) => {
+app.patch('/api/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const updates = req.body;
@@ -130,3 +130,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Serveur en écoute sur le port ${PORT}`);
 });
+
+//test
