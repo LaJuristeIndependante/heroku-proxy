@@ -87,24 +87,10 @@ app.post('/api/product', async (req, res) => {
 });
 
 // Route PUT pour modifier un produit par ID
-app.patch('/api/products/:id', upload.none(), async (req, res) => {
+app.patch('/api/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Vérifier si l'ID est valide
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: `ID invalide : ${id}` });
-        }
-
         const updates = req.body;
-        console.log('ID reçu:', id);
-        console.log('Données reçues pour mise à jour:', updates);
-
-        // Vérifier la connexion à MongoDB
-        if (!mongoose.connection.readyState) {
-            console.error('Connexion à MongoDB non établie');
-            return res.status(500).json({ message: 'Problème de connexion à la base de données' });
-        }
 
         // Trouver et mettre à jour le produit
         const updatedProduct = await Product.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
@@ -113,7 +99,6 @@ app.patch('/api/products/:id', upload.none(), async (req, res) => {
             return res.status(404).json({ message: `Produit introuvable pour l'id ${id}` });
         }
 
-        console.log('Produit mis à jour :', updatedProduct);
         res.status(200).json(updatedProduct);
     } catch (err) {
         console.error('Erreur lors de la mise à jour du produit:', err);
